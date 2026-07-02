@@ -2,12 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
 import { ArrowLeft, Check, Clipboard, Download, FileText } from "lucide-react";
-import type { Report, ReportCallout } from "@/lib/report-types";
+import { SafeMarkdown } from "@/components/report/safe-markdown";
+import type { Evidence, Report, ReportCallout } from "@/lib/report-types";
 import { reportToMarkdown } from "@/lib/report-to-markdown";
+import type { GuardrailConfig } from "@/lib/guardrails/config";
 
-export function ReportLayout({ report }: { report: Report }) {
+export function ReportLayout({
+  report,
+  guardrails,
+}: {
+  report: Report;
+  guardrails?: GuardrailConfig;
+}) {
   const [activeId, setActiveId] = useState(report.sections[0]?.id ?? "");
   const markdown = useMemo(() => reportToMarkdown(report), [report]);
 
@@ -87,6 +94,7 @@ export function ReportLayout({ report }: { report: Report }) {
                 <div className="mb-6">
                   <h2 className="text-2xl font-semibold">{section.title}</h2>
                   <p className="mt-2 text-base leading-7 text-[#5f5b51]">{section.summary}</p>
+                  <EvidenceChips evidence={section.evidence} />
                 </div>
 
                 <div className="grid gap-5">
@@ -97,8 +105,9 @@ export function ReportLayout({ report }: { report: Report }) {
                   {section.subsections.map((subsection) => (
                     <div key={subsection.id} className="border-t border-[#ebe5d8] pt-5">
                       <h3 className="mb-3 text-lg font-semibold">{subsection.title}</h3>
+                      <EvidenceChips evidence={subsection.evidence} />
                       <div className="prose-lite text-[#38352f]">
-                        <ReactMarkdown>{subsection.contentMarkdown}</ReactMarkdown>
+                        <SafeMarkdown>{subsection.contentMarkdown}</SafeMarkdown>
                       </div>
                     </div>
                   ))}
@@ -141,7 +150,7 @@ export function ReportLayout({ report }: { report: Report }) {
             <section id="cheat-sheet" className="rounded-lg border border-[#175a63] bg-[#e2eef0] p-5 sm:p-7">
               <h2 className="mb-4 text-2xl font-semibold">{report.cheatSheet.title}</h2>
               <div className="prose-lite text-[#243d40]">
-                <ReactMarkdown>{report.cheatSheet.contentMarkdown}</ReactMarkdown>
+                <SafeMarkdown>{report.cheatSheet.contentMarkdown}</SafeMarkdown>
               </div>
             </section>
           </div>
@@ -158,6 +167,29 @@ export function ReportLayout({ report }: { report: Report }) {
                 Real runs will enforce evidence metadata before final assembly.
               </p>
             </div>
+            {guardrails ? (
+              <div className="rounded-lg border border-[#d2cabd] bg-[#fffdf8] p-4">
+                <p className="text-sm font-semibold">Active caps</p>
+                <dl className="mt-3 grid gap-2 text-sm text-[#5f5b51]">
+                  <div className="flex justify-between gap-3">
+                    <dt>Run cost</dt>
+                    <dd className="font-semibold text-[#171717]">${guardrails.run.maxCostUsd}</dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt>Report output</dt>
+                    <dd className="font-semibold text-[#171717]">
+                      {guardrails.agentOutputTokens.finalReport.toLocaleString()} tokens
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <dt>Cheat sheet</dt>
+                    <dd className="font-semibold text-[#171717]">
+                      {guardrails.agentOutputTokens.cheatSheet.toLocaleString()} tokens
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            ) : null}
           </div>
         </aside>
       </div>
@@ -182,6 +214,26 @@ function ReportCalloutView({ callout }: { callout: ReportCallout }) {
       </p>
       <h3 className="font-semibold">{callout.title}</h3>
       <p className="mt-2 text-sm leading-6 text-[#38352f]">{callout.content}</p>
+      <EvidenceChips evidence={callout.evidence} />
+    </div>
+  );
+}
+
+function EvidenceChips({ evidence }: { evidence?: Evidence[] }) {
+  if (!evidence?.length) {
+    return null;
+  }
+
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {evidence.slice(0, 4).map((item, index) => (
+        <span
+          key={`${item.sourceType}-${item.sourceId ?? index}`}
+          className="rounded-full border border-[#d2cabd] bg-[#fbf8f1] px-2.5 py-1 text-xs font-medium text-[#5f5b51]"
+        >
+          {item.sourceType.replace("_", " ")} · {item.confidence}
+        </span>
+      ))}
     </div>
   );
 }

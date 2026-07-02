@@ -262,9 +262,39 @@ MAX_RUN_COST_USD=1.00
 MAX_DAILY_COST_USD=5.00
 MAX_INPUT_TOKENS_PER_RUN=60000
 MAX_OUTPUT_TOKENS_PER_RUN=12000
+MAX_OUTPUT_TOKENS_PER_AGENT=2500
+MAX_AGENT_RETRIES=1
+MAX_RUN_DURATION_SECONDS=300
+MAX_SOURCES_PER_RUN=8
+MAX_URLS_PER_RUN=8
+MAX_FILES_PER_RUN=5
+MAX_FILE_SIZE_MB=8
+MAX_SOURCE_CHUNKS_PER_RUN=80
+MAX_WEB_SEARCHES_PER_RUN=10
 ```
 
 The workflow should estimate cost before model calls, stop when a run reaches its cap, block new runs when the daily cap is reached, and log usage by agent task.
+
+Agent responses should also have explicit completion caps so one verbose response cannot consume the whole budget:
+
+```bash
+SOURCE_EXTRACTION_MAX_OUTPUT_TOKENS=1800
+COMPANY_RESEARCH_MAX_OUTPUT_TOKENS=1800
+COMPETITIVE_POSITION_MAX_OUTPUT_TOKENS=1800
+ROLE_DECODER_MAX_OUTPUT_TOKENS=1400
+TERMINOLOGY_MAX_OUTPUT_TOKENS=1200
+CANDIDATE_MATCH_MAX_OUTPUT_TOKENS=1800
+CANDIDATE_PITCH_MAX_OUTPUT_TOKENS=1600
+INTERVIEW_QUESTIONS_MAX_OUTPUT_TOKENS=2200
+IMAGE_SELECTION_MAX_OUTPUT_TOKENS=800
+FINAL_REPORT_MAX_OUTPUT_TOKENS=4500
+CHEAT_SHEET_MAX_OUTPUT_TOKENS=1000
+REPORT_QA_MAX_OUTPUT_TOKENS=900
+```
+
+When real LLM calls are added, these values should be passed to OpenRouter as `max_tokens`, validated after each response, and counted toward `MAX_OUTPUT_TOKENS_PER_RUN`.
+
+The PRD also requires prompt-injection handling, SSRF protection, secure file upload limits, markdown sanitization, safe logging, model-usage tracking, and graceful budget-exceeded stops before the MVP is considered complete.
 
 ## Low-Cost Hosting Path
 
@@ -279,6 +309,8 @@ A low-cost hosted MVP can use:
 If workflow runs exceed serverless limits, add Inngest or Trigger.dev before building a custom worker system.
 
 ## Run Locally
+
+### Windows PowerShell
 
 Install dependencies with project-local cache folders:
 
@@ -319,6 +351,47 @@ Useful checks:
 ```powershell
 npm.cmd run typecheck
 npm.cmd run build
+```
+
+### macOS
+
+Install dependencies with a project-local npm cache:
+
+```bash
+export npm_config_cache="$PWD/.npm-cache"
+npm install
+```
+
+Create a local environment file:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` and set at least:
+
+```bash
+APP_ACCESS_PASSWORD=your-local-password
+OPENROUTER_API_KEY=your-openrouter-key
+```
+
+Run the app:
+
+```bash
+npm run dev -- -p 3000
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+Useful checks:
+
+```bash
+npm run typecheck
+npm run build
 ```
 
 ## Documentation

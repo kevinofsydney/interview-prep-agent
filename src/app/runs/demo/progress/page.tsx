@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, CircleDashed, Clock3 } from "lucide-react";
+import { getGuardrailConfig } from "@/lib/guardrails/config";
 
 const tasks = [
   {
@@ -53,6 +54,8 @@ const tasks = [
 ];
 
 export default function ProgressPage() {
+  const guardrails = getGuardrailConfig();
+
   return (
     <main className="min-h-screen bg-[#f7f5f0] px-5 py-6 sm:px-8">
       <div className="mx-auto max-w-6xl">
@@ -101,9 +104,34 @@ export default function ProgressPage() {
             Real runs will estimate token usage before each model call and stop when
             configured per-run or daily spend caps are reached.
           </p>
+          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <LimitItem label="Run cost" value={`$${guardrails.run.maxCostUsd}`} />
+            <LimitItem label="Duration" value={`${guardrails.run.maxDurationSeconds}s`} />
+            <LimitItem label="Sources" value={`${guardrails.sources.maxSourcesPerRun}`} />
+            <LimitItem label="Retries" value={`${guardrails.run.maxAgentRetries}`} />
+            <LimitItem
+              label="Final report"
+              value={`${guardrails.agentOutputTokens.finalReport.toLocaleString()} tokens`}
+            />
+            <LimitItem
+              label="Questions"
+              value={`${guardrails.agentOutputTokens.interviewQuestions.toLocaleString()} tokens`}
+            />
+            <LimitItem label="Web searches" value={`${guardrails.sources.maxWebSearchesPerRun}`} />
+            <LimitItem label="Fetched pages" value={`${guardrails.sources.maxFetchedPagesPerRun}`} />
+          </dl>
         </div>
       </div>
     </main>
+  );
+}
+
+function LimitItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-[#d2cabd] bg-[#fffdf8] px-3 py-2">
+      <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6c6a63]">{label}</dt>
+      <dd className="mt-1 font-semibold text-[#171717]">{value}</dd>
+    </div>
   );
 }
 
