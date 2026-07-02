@@ -723,6 +723,37 @@ Show per-run totals in a debug or admin section.
 
 Cost estimates should be configurable, not hardcoded as facts.
 
+## 15.1 Cost Guardrails
+
+Real LLM calls must not be enabled until cost guardrails are implemented.
+
+Required environment variables:
+
+```bash
+MAX_RUN_COST_USD=1.00
+MAX_DAILY_COST_USD=5.00
+MAX_INPUT_TOKENS_PER_RUN=60000
+MAX_OUTPUT_TOKENS_PER_RUN=12000
+```
+
+The workflow should:
+
+- Estimate token usage before each model call.
+- Block a run before starting if the estimated minimum cost exceeds the per-run cap.
+- Stop a run if accumulated estimated cost reaches the per-run cap.
+- Stop new runs if the local daily cap has been reached.
+- Store model usage per agent task.
+- Show per-run cost in a debug section.
+
+Default MVP limits:
+
+- Per-run cost cap: `$1.00`
+- Daily cost cap: `$5.00`
+- Max resume input: `12,000` tokens
+- Max job description input: `8,000` tokens
+- Max pasted source input per run: `40,000` tokens
+- Max final synthesis input: `60,000` tokens
+
 ## 16. Privacy and Data Handling
 
 The MVP should include:
@@ -755,11 +786,14 @@ Do not fail the entire run unless final report assembly cannot proceed.
 
 Frontend:
 
-- Next.js
+- Next.js App Router
 - React
+- TypeScript
 - Tailwind CSS
 - shadcn/ui
+- lucide-react icons
 - Markdown renderer
+- Zod for validation
 
 Backend:
 
@@ -768,19 +802,40 @@ Backend:
 
 Data:
 
-- Local development storage first
-- Postgres when persistence and deployment matter
+- SQLite with Prisma for MVP local persistence
+- Project-local database at `./data/app.db`
+- Postgres when hosted persistence and multi-user auth matter
 - pgvector optional later
 
 File storage:
 
-- Local filesystem in development
+- Project-local filesystem storage under `./data`
 - Cloudflare R2, Supabase Storage, or S3-compatible storage in production
 
 Queue and workflow:
 
 - Synchronous or simple background execution for the earliest prototype
 - BullMQ, Inngest, or Trigger.dev when workflow retries and production reliability matter
+
+Auth:
+
+- Simple shared-password access for MVP through `APP_ACCESS_PASSWORD`
+- Signed HTTP-only cookie after password entry
+- Real user auth later through Auth.js, Clerk, Supabase Auth, or better-auth
+
+LLM provider:
+
+- OpenRouter is the primary MVP provider.
+- Open-source or low-cost hosted models should be used during MVP testing.
+- Model progression should be Gemma 4 first, then DeepSeek V4 Flash, then GLM 5.2 as the production candidate.
+- All three model phases should run through OpenRouter using environment-configured model IDs.
+- The LLM router should remain OpenAI-compatible so future providers can be added without changing agent code.
+
+Hosting path:
+
+- Local-first development before hosted deployment.
+- Low-cost hosted MVP can use Vercel, Neon or Supabase Postgres, Cloudflare R2 or Supabase Storage, and OpenRouter.
+- If runs become too long for serverless limits, introduce Inngest or Trigger.dev before building a custom worker system.
 
 Dependency rule:
 
@@ -988,4 +1043,3 @@ And produce a source-aware, skimmable, immediately useful report containing:
 - 30/60/90-day plan
 - Risks, gaps, and red flags
 - Final cheat sheet
-

@@ -197,18 +197,130 @@ Add:
 
 ## Recommended Stack
 
-- Next.js
+- Next.js App Router
 - React
+- TypeScript
 - Tailwind CSS
-- shadcn/ui
+- shadcn/ui-compatible component structure
+- lucide-react icons
+- Zod for validation
 - Markdown renderer
 - Next.js API routes for the first backend
-- Local development storage first
-- Postgres when persistent deployment matters
+- SQLite with Prisma for MVP local persistence
+- Project-local storage under `./data`
+- OpenRouter as the primary MVP LLM provider
+- OpenAI-compatible provider abstraction for future flexibility
 
 Project dependencies should be installed locally so the whole project can be deleted cleanly if needed.
+
+## Local-First Development
+
+The MVP should keep runtime state inside the project folder where practical:
+
+- SQLite database: `./data/app.db`
+- Uploaded files: `./data/uploads`
+- Generated exports: `./data/exports`
+- Local package dependencies: `./node_modules`
+
+The repository ignores local runtime state so the app can be reset by deleting generated folders.
+
+## MVP Access Control
+
+The MVP does not need real user accounts. Use a shared password gate:
+
+```bash
+APP_ACCESS_PASSWORD=
+```
+
+After successful password entry, the app should store a signed HTTP-only cookie. Later, this can be replaced with real user auth through Auth.js, Clerk, Supabase Auth, or better-auth.
+
+## LLM Defaults
+
+OpenRouter is the default provider during MVP development. The app should use environment-configured model roles:
+
+```bash
+OPENROUTER_API_KEY=
+RESEARCH_MODEL=
+SYNTHESIS_MODEL=
+FINAL_MODEL=
+```
+
+Use this OpenRouter model progression:
+
+1. Gemma 4 for earliest MVP testing.
+2. DeepSeek V4 Flash when the workflow needs stronger cheap synthesis.
+3. GLM 5.2 as the production candidate.
+
+The exact values should be the current OpenRouter model IDs available in the account. The router should remain OpenAI-compatible so the project can support other providers later.
+
+## Cost Guardrails
+
+Real model calls should not be enabled until these limits are enforced:
+
+```bash
+MAX_RUN_COST_USD=1.00
+MAX_DAILY_COST_USD=5.00
+MAX_INPUT_TOKENS_PER_RUN=60000
+MAX_OUTPUT_TOKENS_PER_RUN=12000
+```
+
+The workflow should estimate cost before model calls, stop when a run reaches its cap, block new runs when the daily cap is reached, and log usage by agent task.
+
+## Low-Cost Hosting Path
+
+A low-cost hosted MVP can use:
+
+- Vercel for the Next.js app
+- Neon Postgres or Supabase Postgres for hosted persistence
+- Cloudflare R2 or Supabase Storage for uploaded files
+- OpenRouter for model calls
+- Vercel environment variables for secrets
+
+If workflow runs exceed serverless limits, add Inngest or Trigger.dev before building a custom worker system.
+
+## Run Locally
+
+Install dependencies with project-local cache folders:
+
+```powershell
+$env:npm_config_cache="$PWD\.npm-cache"
+$env:APPDATA="$PWD\.appdata"
+$env:LOCALAPPDATA="$PWD\.localappdata"
+npm.cmd install
+```
+
+Create a local environment file:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+Edit `.env.local` and set at least:
+
+```bash
+APP_ACCESS_PASSWORD=your-local-password
+OPENROUTER_API_KEY=your-openrouter-key
+```
+
+Run the app:
+
+```powershell
+node.exe node_modules/next/dist/bin/next dev -p 3000
+```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+Useful checks:
+
+```powershell
+npm.cmd run typecheck
+npm.cmd run build
+```
 
 ## Documentation
 
 The cleaned product requirements live in [PRD.md](./PRD.md).
-
