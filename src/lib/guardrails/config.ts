@@ -21,6 +21,9 @@ const guardrailEnvSchema = z.object({
   MAX_WEB_SEARCHES_PER_RUN: z.coerce.number().int().positive().catch(10),
   MAX_FETCHED_PAGES_PER_RUN: z.coerce.number().int().positive().catch(20),
   MAX_FETCH_RESPONSE_BYTES: z.coerce.number().int().positive().catch(2000000),
+  MAX_REQUEST_BODY_BYTES: z.coerce.number().int().positive().catch(2000000),
+  RUN_CREATE_RATE_LIMIT: z.coerce.number().int().positive().catch(5),
+  RUN_RETRY_RATE_LIMIT: z.coerce.number().int().positive().catch(10),
   SOURCE_EXTRACTION_MAX_OUTPUT_TOKENS: envNumber(1800),
   COMPANY_RESEARCH_MAX_OUTPUT_TOKENS: envNumber(1800),
   COMPETITIVE_POSITION_MAX_OUTPUT_TOKENS: envNumber(1800),
@@ -74,6 +77,9 @@ export function getGuardrailConfig() {
       maxWebSearchesPerRun: env.MAX_WEB_SEARCHES_PER_RUN,
       maxFetchedPagesPerRun: env.MAX_FETCHED_PAGES_PER_RUN,
       maxFetchResponseBytes: env.MAX_FETCH_RESPONSE_BYTES,
+      maxRequestBodyBytes: env.MAX_REQUEST_BODY_BYTES,
+      runCreateRateLimit: env.RUN_CREATE_RATE_LIMIT,
+      runRetryRateLimit: env.RUN_RETRY_RATE_LIMIT,
     },
     agentOutputTokens: {
       sourceExtraction: env.SOURCE_EXTRACTION_MAX_OUTPUT_TOKENS,
@@ -97,4 +103,3 @@ export function getAgentMaxOutputTokens(agent: AgentKind) {
   const config = getGuardrailConfig();
   return config.agentOutputTokens[agent] ?? config.agentOutputTokens.default;
 }
-

@@ -7,18 +7,15 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "db:push": "prisma db push",
-    "db:generate": "prisma generate"
+    "test": "vitest run"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.3",
     "@tailwindcss/postcss": "latest",
     "@types/better-sqlite3": "^7.6.13",
     "better-sqlite3": "^12.11.1",
     "clsx": "latest",
     "lucide-react": "latest",
     "next": "latest",
-    "prisma": "^6.19.3",
     "react": "latest",
     "react-dom": "latest",
     "react-markdown": "latest",
@@ -32,6 +29,7 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "tsx": "^4.22.4",
-    "typescript": "latest"
+    "typescript": "latest",
+    "vitest": "^4.1.9"
   }
 }

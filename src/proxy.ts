@@ -1,12 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const SESSION_COOKIE = "ipa_session";
+const DEFAULT_MAX_REQUEST_BODY_BYTES = 2_000_000;
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const maxBodyBytes = Number(process.env.MAX_REQUEST_BODY_BYTES ?? DEFAULT_MAX_REQUEST_BODY_BYTES);
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+
+  if (request.method !== "GET" && contentLength > maxBodyBytes) {
+    return withSecurityHeaders(
+      new NextResponse("Request body too large", {
+        status: 413,
+      }),
+    );
+  }
 
   if (
     pathname !== "/login" &&
+    pathname !== "/error" &&
     !pathname.startsWith("/api/auth") &&
     !pathname.startsWith("/_next") &&
     pathname !== "/favicon.ico"
@@ -59,5 +71,5 @@ async function sessionTokenForPassword(password: string) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|error).*)"],
 };

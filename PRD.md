@@ -1204,8 +1204,9 @@ Backend:
 
 Data:
 
-- SQLite with Prisma for MVP local persistence
+- SQLite runtime persistence with `better-sqlite3` for the local MVP
 - Project-local database at `./data/app.db`
+- Prisma schema kept as a future migration reference, not required for local runtime
 - Postgres when hosted persistence and multi-user auth matter
 - pgvector optional later
 

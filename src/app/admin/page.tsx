@@ -26,13 +26,22 @@ export default async function AdminPage() {
             <ArrowLeft size={16} />
             Runs
           </Link>
-          <p className="text-sm text-[#6c6a63]">Local admin usage view</p>
+          <div className="flex items-center gap-3">
+            <a
+              href="/admin/usage.csv"
+              className="rounded-md border border-[#c9c1b2] bg-[#fffdf8] px-3 py-2 text-sm font-semibold hover:border-[#175a63]"
+            >
+              Export CSV
+            </a>
+            <p className="text-sm text-[#6c6a63]">Local admin usage view</p>
+          </div>
         </nav>
 
         <header className="mb-6">
           <h1 className="text-4xl font-semibold">Usage and Cost</h1>
           <p className="mt-3 text-[#6c6a63]">
             Redacted admin view of tokens, models, approximate costs, and job-level usage.
+            Raw prompts, resume text, source chunks, and secrets are hidden by default.
           </p>
         </header>
 

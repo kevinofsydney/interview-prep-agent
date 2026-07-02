@@ -109,6 +109,9 @@ export default async function Home() {
                 <p className="text-sm text-[#6c6a63]">
                   Uses local persistence, budget caps, agent tasks, report validation, and usage tracking.
                 </p>
+                <p className="mt-2 text-sm font-medium text-[#8a4b10]">
+                  Current cap: ${guardrails.run.maxCostUsd} per run, {guardrails.run.maxDurationSeconds}s max, {guardrails.sources.maxSourcesPerRun} sources.
+                </p>
               </div>
               <SubmitButton
                 pendingLabel="Creating run..."
