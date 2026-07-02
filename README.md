@@ -206,7 +206,8 @@ Add:
 - Zod for validation
 - Markdown renderer
 - Next.js API routes for the first backend
-- SQLite with Prisma for MVP local persistence
+- SQLite with `better-sqlite3` for current MVP local persistence
+- Prisma schema kept as the future migration contract
 - Project-local storage under `./data`
 - OpenRouter as the primary MVP LLM provider
 - OpenAI-compatible provider abstraction for future flexibility
@@ -307,6 +308,93 @@ A low-cost hosted MVP can use:
 - Vercel environment variables for secrets
 
 If workflow runs exceed serverless limits, add Inngest or Trigger.dev before building a custom worker system.
+
+## Remaining Work by Priority
+
+### Priority 0: Immediate Validation Before Sharing
+
+These should be done before treating the MVP as ready for real interview prep use.
+
+1. Test the OpenRouter path with a real `OPENROUTER_API_KEY`.
+2. Replace placeholder model IDs with the exact OpenRouter model IDs for Gemma 4, DeepSeek V4 Flash, and GLM 5.2.
+3. Run several real prep runs and inspect whether each agent returns usable JSON.
+4. Tighten prompts where reports are generic, too long, or insufficiently source-grounded.
+5. Add friendly server-action error handling for invalid inputs, budget failures, and workflow failures.
+6. Remove or hide the old demo routes:
+   - `/runs/demo/progress`
+   - `/runs/demo/report`
+7. Update the README and PRD if the model IDs, budget defaults, or storage approach change during real-model testing.
+
+### Priority 1: MVP Hardening
+
+These make the local MVP safer and more reliable.
+
+1. Add automated tests for the auth gate, run creation, workflow completion, report loading, and admin usage view.
+2. Add tests for budget cap failures, retry limits, unsafe URL blocking, upload validation, and markdown sanitization.
+3. Add better UI feedback for loading, failed, partial, and budget-exceeded states.
+4. Add a visible pre-run cost/budget warning before the workflow starts.
+5. Add stricter request body limits for form submissions.
+6. Add structured server logging with secret redaction.
+7. Add rate limits for run creation and task retries.
+8. Add admin CSV export for usage records.
+9. Add clearer debug/admin controls so raw prompts, resume text, and source chunks stay hidden by default.
+10. Decide whether to remove Prisma scripts or fully restore Prisma-backed migrations.
+
+### Priority 2: Report Quality Improvements
+
+These improve the core user value.
+
+1. Replace the current local deterministic agent outputs with richer prompt templates for each real agent.
+2. Add stronger final report QA checks for missing evidence, generic prose, unsupported claims, and overlong sections.
+3. Improve evidence/source chips so users can see which source supports each claim.
+4. Add a source inspection panel that shows source title, type, confidence, and extracted insights.
+5. Add regenerate-failed-task behavior rather than regenerating the whole run.
+6. Improve mobile table of contents behavior.
+7. Improve markdown export formatting and include source/evidence summaries.
+8. Add saved-run search, filters, and sorting.
+
+### Priority 3: Source Expansion
+
+These extend the MVP beyond pasted text.
+
+1. Add TXT and Markdown file passthrough.
+2. Add PDF parsing.
+3. Add DOCX parsing.
+4. Add document triage for long files before extraction.
+5. Add source chunking and relevance selection.
+6. Enforce extracted text caps per source.
+7. Add secure file upload endpoints with MIME, extension, size, and decompressed-size checks.
+8. Add URL ingestion with timeout, redirect limits, DNS/IP revalidation, SSRF protection, and response-size caps.
+9. Add source list UI.
+10. Add delete-source behavior.
+11. Add low-confidence source markers.
+
+### Priority 4: Research Expansion
+
+These are valuable but not required for the local MVP.
+
+1. Add web search abstraction.
+2. Add Company Research Agent.
+3. Add Competitive Position Agent.
+4. Add Terminology Agent.
+5. Add Image Selection Agent.
+6. Add public/open-license image metadata and attribution.
+7. Add optional compensation research with strict search/fetch caps.
+
+### Priority 5: Production Readiness
+
+These are needed before broader hosted use.
+
+1. Deploy the Next.js app to Vercel or another low-cost host.
+2. Move persistence from local SQLite to hosted Postgres through Neon or Supabase.
+3. Move uploaded files to Cloudflare R2 or Supabase Storage.
+4. Replace shared password access with real auth.
+5. Add real users and scope every query by `user_id`.
+6. Add per-user daily run limits and spend caps.
+7. Add queue/background execution with Inngest or Trigger.dev if runs exceed serverless limits.
+8. Add production admin dashboard filters by user, job, model, provider, date range, and status.
+9. Add CSV export for admin usage views.
+10. Add monitoring for failed runs, budget-exceeded runs, model errors, and latency.
 
 ## Run Locally
 
